@@ -16,6 +16,11 @@ function classifyResults(allResults: any[]) {
     official: all.filter(result => OFFICIAL_ACCOUNTS.includes(result.developer)),
     firebase: all.filter(result => result.developer === FIREBASE_ACCOUNT),
     stateManagement: all.filter(result => STATE_MANAGE_LIST.includes(result.name)),
+    androidNotWindowsPackages: all.filter(result => result.android && !result.windows),
+    iosNotWindowsPackages: all.filter(result => result.ios && !result.windows),
+    iosAndroidNotWindowsPackages: all.filter(result => result.ios && result.android && !result.windows),
+    macosNotWindowsPackages: all.filter(result => result.macos && !result.windows),
+    notWindowsPackages: all.filter(result => !result.windows),
     all: all,
   }
 }
@@ -26,10 +31,14 @@ function saveResultsToFile(classifiedResults: ClassifiedResults) {
   fs.writeFileSync(dataPath, serializedData, 'utf8')
 }
 
+function percentage(count: number, total: number) : string{
+  const percentage = (Math.round(count * 10000 / total) / 100).toFixed(2)
+  return `${count}/${total}=${percentage}%`;
+}
 
 function printResults(classifiedResults: ClassifiedResults) {
 
-  const {all, official, firebase, stateManagement} = classifiedResults;
+  const {all, official, firebase, stateManagement, androidNotWindowsPackages, iosNotWindowsPackages, iosAndroidNotWindowsPackages, macosNotWindowsPackages, notWindowsPackages} = classifiedResults;
   const totalPackages = all.length;
 
   // Official packages
@@ -45,6 +54,23 @@ function printResults(classifiedResults: ClassifiedResults) {
   // State management packages
   console.log(`State Management Packages`)
   console.table(stateManagement)
+  printDivider()
+
+  // Windows support
+  console.log(`Support Android, but not Windows (${percentage(androidNotWindowsPackages.length, totalPackages)})`)
+  console.table(androidNotWindowsPackages)
+  printDivider()
+  console.log(`Support iOS, but not Windows (${percentage(iosNotWindowsPackages.length, totalPackages)})`)
+  console.table(iosNotWindowsPackages)
+  printDivider()
+  console.log(`Support iOS and Android, but not Windows (${percentage(iosAndroidNotWindowsPackages.length, totalPackages)})`)
+  console.table(iosAndroidNotWindowsPackages)
+  printDivider()
+  console.log(`Support MacOS, but not Windows (${percentage(macosNotWindowsPackages.length, totalPackages)})`)
+  console.table(macosNotWindowsPackages)
+  printDivider()
+  console.log(`Do not support Windows (${percentage(notWindowsPackages.length, totalPackages)})`)
+  console.table(notWindowsPackages)
   printDivider()
 
   // general summary

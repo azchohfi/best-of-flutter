@@ -30,6 +30,10 @@ function classifyResults(allResults) {
         official: all.filter(function (result) { return constants_1.OFFICIAL_ACCOUNTS.includes(result.developer); }),
         firebase: all.filter(function (result) { return result.developer === constants_1.FIREBASE_ACCOUNT; }),
         stateManagement: all.filter(function (result) { return constants_1.STATE_MANAGE_LIST.includes(result.name); }),
+        androidNotWindowsPackages: all.filter(function (result) { return result.android && !result.windows; }),
+        iosNotWindowsPackages: all.filter(function (result) { return result.ios && !result.windows; }),
+        iosAndroidNotWindowsPackages: all.filter(function (result) { return result.ios && result.android && !result.windows; }),
+        macosNotWindowsPackages: all.filter(function (result) { return result.macos && !result.windows; }),
         all: all,
     };
 }
@@ -40,8 +44,12 @@ function saveResultsToFile(classifiedResults) {
     fs_1.default.writeFileSync(dataPath, serializedData, 'utf8');
 }
 exports.saveResultsToFile = saveResultsToFile;
+function percentage(count, total) {
+    var percentage = (Math.round(count * 10000 / total) / 100).toFixed(2);
+    return count + "/" + total + "=" + percentage + "%";
+}
 function printResults(classifiedResults) {
-    var all = classifiedResults.all, official = classifiedResults.official, firebase = classifiedResults.firebase, stateManagement = classifiedResults.stateManagement;
+    var all = classifiedResults.all, official = classifiedResults.official, firebase = classifiedResults.firebase, stateManagement = classifiedResults.stateManagement, androidNotWindowsPackages = classifiedResults.androidNotWindowsPackages, iosNotWindowsPackages = classifiedResults.iosNotWindowsPackages, iosAndroidNotWindowsPackages = classifiedResults.iosAndroidNotWindowsPackages, macosNotWindowsPackages = classifiedResults.macosNotWindowsPackages;
     var totalPackages = all.length;
     // Official packages
     console.log("Google own a total of " + official.length + "/" + totalPackages + " top packages");
@@ -54,6 +62,19 @@ function printResults(classifiedResults) {
     // State management packages
     console.log("State Management Packages");
     console.table(stateManagement);
+    printDivider();
+    // Windows support
+    console.log("Support Android, but not Windows (" + percentage(androidNotWindowsPackages.length, totalPackages) + ")");
+    console.table(androidNotWindowsPackages);
+    printDivider();
+    console.log("Support iOS, but not Windows (" + percentage(iosNotWindowsPackages.length, totalPackages) + ")");
+    console.table(iosNotWindowsPackages);
+    printDivider();
+    console.log("Support iOS and Android, but not Windows (" + percentage(iosAndroidNotWindowsPackages.length, totalPackages) + ")");
+    console.table(iosAndroidNotWindowsPackages);
+    printDivider();
+    console.log("Support MacOS, but not Windows (" + percentage(macosNotWindowsPackages.length, totalPackages) + ")");
+    console.table(macosNotWindowsPackages);
     printDivider();
     // general summary
     console.log("Top " + totalPackages + " Flutter Packages");
